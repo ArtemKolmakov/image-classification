@@ -1,6 +1,7 @@
 import argparse
 import torchvision
 
+from model_wrapped import FineTuneModel, ModelInterface
 from dataset import create_dataloader
 
 
@@ -22,5 +23,5 @@ if __name__ == "__main__":
     )
     model = torchvision.models.resnext50_32x4d(pretrained=True)
     model= FineTuneModel(model, num_classes=num_classes)
-    model = Model(model=model)
+    model = ModelInterface(model=model)
     model.train(train_loader, val_loader)
