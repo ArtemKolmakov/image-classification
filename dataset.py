@@ -74,7 +74,7 @@ def train_val_split(df, split_ration):
         df.iloc[val_indexes].reset_index(drop=True)
            )
 
-def create_dataloader(csv_file, root_dir, num_classes=2, split_ration=0.8):
+def create_dataloader(csv_file, root_dir, split_ration=0.8):
     aug = [
         transforms.ColorJitter(brightness=(0, 1), contrast=(0, 1), saturation=0, hue=(-0.5, 0.5)),
         transforms.RandomAffine((-10, 10), scale=(0.5 ,1)),
@@ -93,7 +93,10 @@ def create_dataloader(csv_file, root_dir, num_classes=2, split_ration=0.8):
     val_transformations = transforms.Compose(transformations)
     
     df = pd.read_csv(csv_file, names=['filename', 'target'])[:-1]
-    df.target = df.target.map(int)
+    df.target = df.target.map(int) 
+    coding_cls = { cls: i for i, cls in enumerate(df.target.unique())}
+    num_classes = max(coding_cls.values())
+    df.target = df.target.map(lambda x: coding_cls[x])
     df_train, df_val = train_val_split(df, split_ration)
     
     train_set = ClassifierDataset(
@@ -110,4 +113,4 @@ def create_dataloader(csv_file, root_dir, num_classes=2, split_ration=0.8):
     )
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=32, shuffle=True)
     val_loader = torch.utils.data.DataLoader(val_set, batch_size=8)
-    return train_loader, val_loader
+    return train_loader, val_loader, num_classes
