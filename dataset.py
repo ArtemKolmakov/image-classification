@@ -94,7 +94,7 @@ def create_dataloader(csv_file, root_dir, split_ration=0.8):
     
     df = pd.read_csv(csv_file, names=['filename', 'target'])[:-1]
     df.target = df.target.map(int) 
-    coding_cls = { cls: i for i, cls in enumerate(df.target.unique())}
+    coding_cls = {cls: i for i, cls in enumerate(df.target.unique())}
     num_classes = max(coding_cls.values())
     df.target = df.target.map(lambda x: coding_cls[x])
     df_train, df_val = train_val_split(df, split_ration)
