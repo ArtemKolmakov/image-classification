@@ -5,7 +5,7 @@ from PIL import Image
 from PIL import ImageFile
 import pandas as pd
 import torch
-from random import random
+import random
 import os
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
@@ -46,7 +46,7 @@ class ClassifierDataset(Dataset):
         cls = int(cls)
         label = self.one_hot_encoder(cls)
         sample = {'image': image, 'landmarks': label}
-        if self.augmentation and random() < self.p_augmentation:
+        if self.augmentation and random.random() < self.p_augmentation:
             try:
                 sample['image'] = self.augmentation(sample['image'])
             except: pass
@@ -59,8 +59,8 @@ def train_val_split(df, split_ration):
     count_target = {}
     train_indexes = []
     val_indexes = []
-    for target in df.target.unique():
-        samples = df[df.target == target]
+    for target in df.label.unique():
+        samples = df[df.label == target]
         ln = len(samples)
         samples_indexes = list(samples.index)
         if ln < 25:
@@ -80,9 +80,9 @@ def train_val_split(df, split_ration):
 # returns fixed df and num_classes
 def fix_df(df):
     # Convert class sequence [0, 1, 3, .., n] to [0, 1, 2, .., num_classes-1]
-    coding_cls = { cl: i for i, cl in enumerate(df.target.unique())}
-    df.target = df.target.map(lambda x: coding_cls[x])
-    num_classes = max(df.target) + 1
+    coding_cls = { cl: i for i, cl in enumerate(df.label.unique())}
+    df.label = df.label.map(lambda x: coding_cls[x])
+    num_classes = max(df.label) + 1
     
     return df, num_classes
 
@@ -112,8 +112,8 @@ def create_dataloader(csv_file, root_dir, split_ratio=0.8):
     aug = transforms.Compose(aug)
     transformations = transforms.Compose(transformations)
     
-    df = pd.read_csv(csv_file, names=['filename', 'target'])[:-1]
-    df.target = df.target.map(int)
+    df = pd.read_csv(csv_file)
+    df.laberl = df.label.map(int)
     # Fix dataframe before split to prevent class inconsistency
     df_train, df_val = train_val_split(df, split_ratio)
     df_train, num_classes = fix_df(df_train)
